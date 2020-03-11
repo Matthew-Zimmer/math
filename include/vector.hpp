@@ -25,7 +25,7 @@ namespace Slate::Math
     class Operatorable
     {
     public:
-        using Required_Features = Features<Operators::Mathematically_Operatorable>;
+        using Required_Features = Features<Operators::Addable, Operators::Subtractable>;
 
         template <typename T>
         auto& operator+=(T const& other) &
@@ -34,7 +34,7 @@ namespace Slate::Math
             auto iter = Meta::cast<T>(other).data().begin();
             for (auto& x : Meta::cast<Type>(*this).data())
                 x += *iter++;
-            return *this;
+            return Meta::cast<Type>(*this);
         }
         
         template <typename T>
@@ -44,7 +44,7 @@ namespace Slate::Math
             auto iter = Meta::cast<T>(other).data().begin();
             for (auto& x : Meta::cast<Type>(*this).data())
                 x -= *iter++;
-            return *this;
+            return Meta::cast<Type>(*this);
         }
         
         template <typename T>
@@ -52,7 +52,13 @@ namespace Slate::Math
         {
             for (auto& x : Meta::cast<Type>(*this).data())
                 x *= other;
-            return *this;
+            return Meta::cast<Type>(*this);
+        }
+        
+        template <typename T>
+        auto&& operator*=(T const& other) &&
+        {
+            return std::move(*this *= other);
         }
         
         template <typename T>
@@ -62,8 +68,14 @@ namespace Slate::Math
                 x /= other;
             return *this;
         }
+
+        template <typename T>
+        auto&& operator/=(T const& other) &&
+        {
+            return std::move(*this /= other);
+        }
         
-        friend auto operator-(Type const& left)
+        friend auto operator-(Type left)
         {
             return left *= -1;
         }

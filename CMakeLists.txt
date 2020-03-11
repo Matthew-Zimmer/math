@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(math)
 
 add_library(math INTERFACE)
-add_library(math_test)
+add_executable(math_test)
 
 add_subdirectory(include)
 add_subdirectory(src)
