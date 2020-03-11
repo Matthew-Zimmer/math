@@ -1,0 +1,1 @@
+target_sources(math_test PUBLIC main.cpp)
