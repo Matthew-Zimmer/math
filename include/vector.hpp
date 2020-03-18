@@ -147,6 +147,10 @@ namespace Slate::Math
     {
     public:
         static constexpr std::size_t dim = Dim;
+        Vector(std::initializer_list<Type> const& elements)
+        {
+            std::copy(elements.begin(), elements.end(), this->data().begin());
+        }
     };
 
     template <typename Type>
