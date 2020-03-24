@@ -1,5 +1,7 @@
 #pragma once
+#include <algorithm>
 #include <array>
+#include <numeric>
 
 #include <cmath>
 
@@ -116,11 +118,7 @@ namespace Slate::Math
         friend auto operator*(Type const& left, T const& right)
         {
             static_assert(Type::dim == T::dim);
-            auto left_iter = left.begin(), right_iter = right.begin();
-            auto r = *left_iter++ * *right_iter++;
-            while (left_iter != left.end())
-                r += *left_iter++ * *right_iter++;
-            return r;
+            return std::inner_product(left.begin(), left.end(), right.begin(), static_cast<typename Type::Element_Type>(0));
         }
     };
 
@@ -142,15 +140,37 @@ namespace Slate::Math
         }
     };
 
+    namespace Detail
+    {
+        template <typename Type, std::size_t N, std::size_t M>
+        auto Join(std::array<Type, N>&& u, std::array<Type, M>&& v)
+        {
+            std::array<Type, N + M> r;
+            std::move(u.begin(), u.end(), r.begin());
+            std::move(v.begin(), v.end(), r.begin() + N);
+            return r;
+        }
+    }
+
     template <std::size_t Dim, typename Type>
-    class Vector : public Is<Vector<Dim, Type>, Variables<V::Fixed_Data<Dim, Type>>, Features<Operatorable, Inner_Product, Euclidean_Norm>>
+    class Vector : public Is<Vector<Dim, Type>, 
+        Variables<
+            V::Fixed_Data<Dim, Type>>, 
+        Features<
+            Operatorable, 
+            Inner_Product, 
+            Euclidean_Norm>>
     {
     public:
         static constexpr std::size_t dim = Dim;
-        Vector(std::initializer_list<Type> const& elements)
-        {
-            std::copy(elements.begin(), elements.end(), this->data().begin());
-        }
+        using Element_Type = Type;
+        template <typename ... Types, typename = std::enable_if_t<sizeof...(Types) == Dim>>
+        Vector(Types&& ... args) : Vector<Dim, Type>::Inherit{ V::Fixed_Data<Dim, Type>{ std::array{ static_cast<Type>(std::forward<Types>(args))... } } }
+        {}
+        template <typename T, typename ... Types, typename = std::enable_if_t<sizeof...(Types) + 1 < Dim>>
+        Vector(T&& arg, Types&& ... args) : Vector<Dim, Type>::Inherit{ V::Fixed_Data<Dim, Type>{ Detail::Join(std::array{ static_cast<Type>(std::forward<T>(arg)), static_cast<Type>(std::forward<Types>(args))... }, std::array<Type, Dim - sizeof...(Types) - 1>{}) } }
+        {}
+        Vector() = default;
     };
 
     template <typename Type>

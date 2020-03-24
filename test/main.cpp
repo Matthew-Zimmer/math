@@ -6,10 +6,7 @@ using namespace Slate::Math;
 
 int main()
 {
-    Vector<2, double> u{}, v{};
-
-    u[0] = 3;
-    u[1] = 4;
+    Vector<2, double> u{ 3, 4 }, v{};
 
     v[0] = 3;
     v[1] = 4;
